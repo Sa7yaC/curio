@@ -37,7 +37,12 @@ if allowed_hosts_env:
 elif DEBUG:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+
+# Auto-detect Render external hostname if provided by Render environment
+render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -105,15 +110,28 @@ if DB_NAME or os.environ.get('DB_ENGINE') == 'django.db.backends.postgresql':
 elif DATABASE_URL:
     import urllib.parse as urlparse
     url = urlparse.urlparse(DATABASE_URL)
+    query_params = urlparse.parse_qs(url.query)
+    
+    # Handle SSL mode (Supabase requires SSL)
+    db_options = {}
+    if 'sslmode' in query_params:
+        db_options['sslmode'] = query_params['sslmode'][0]
+    elif url.hostname and 'supabase' in url.hostname:
+        db_options['sslmode'] = 'require'
+
+    is_supabase = bool(url.hostname and 'supabase' in url.hostname)
+    default_conn_max_age = 0 if is_supabase else 60
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': url.path[1:],
-            'USER': url.username,
-            'PASSWORD': url.password,
+            'USER': urlparse.unquote(url.username) if url.username else '',
+            'PASSWORD': urlparse.unquote(url.password) if url.password else '',
             'HOST': url.hostname,
             'PORT': url.port or 5432,
-            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', 60)),
+            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', default_conn_max_age)),
+            'OPTIONS': db_options,
         }
     }
 else:
@@ -183,7 +201,9 @@ SIMPLE_JWT = {
 # ==============================================================================
 cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS')
 if cors_origins_env:
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_origins_env.split(',') if o.strip()]
+    CORS_ALLOWED_ORIGINS = [
+        o.strip().rstrip('/') for o in cors_origins_env.split(',') if o.strip()
+    ]
     CORS_ALLOW_ALL_ORIGINS = False
 elif DEBUG:
     # Safe local dev defaults

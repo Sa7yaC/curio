@@ -93,6 +93,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 tenant = Tenant.objects.create(
                     name="Curio",
                     store_name="Curio",
+                    contact_email=attrs.get('email') or "admin@curio.store",
+                    contact_phone=attrs.get('phone') or "+1000000000",
                     subdomain="curio",
                     is_active=True
                 )
