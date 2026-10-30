@@ -18,7 +18,7 @@ git clone https://github.com/Sa7yaC/ecommerce-platform.git
 Go to the project directory
 
 ```bash
-cd ecommerce-platform
+cd ecommerce-platform/backend
 ```
 
 Create Virtual Environment

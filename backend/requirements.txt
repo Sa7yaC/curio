@@ -1,4 +1,4 @@
-Django>=4.2,<5.1
+Django>=4.2
 djangorestframework>=3.14
 djangorestframework-simplejwt>=5.3.0
 django-cors-headers
@@ -6,3 +6,4 @@ setuptools
 psycopg2-binary
 python-dotenv
 gunicorn
+whitenoise>=6.6.0

@@ -1,0 +1,36 @@
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Local SQLite databases (use Render Postgres in production)
+*.sqlite3
+*.sqlite3-journal
+*.db
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Static collection output (will be built fresh in container)
+staticfiles/
+
+# Testing & logs
+testing/
+*.log
+logs/
+
+# Git & OS metadata
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+
